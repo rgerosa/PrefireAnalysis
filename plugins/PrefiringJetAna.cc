@@ -16,9 +16,7 @@
 
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
-#include "DataFormats/PatCandidates/interface/Electron.h"
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/L1Trigger/interface/EGamma.h"
 #include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
@@ -38,7 +36,10 @@ namespace {
     Long64_t event;
     int bunchCrossing;
     
-    LorentzVector tag_electron;
+    std::vector<LorentzVector> jet_p4;
+    std::vector<float> jet_neutralEmFrac;
+    std::vector<float> jet_neutralHadFrac;
+
     std::vector<int> L1EG_bx;
     std::vector<LorentzVector> L1EG_p4;
     std::vector<int> L1EG_iso;
@@ -56,10 +57,10 @@ namespace {
   }
 }
 
-class PrefiringZAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class PrefiringJetAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
   public:
-    explicit PrefiringZAna(const edm::ParameterSet&);
-    ~PrefiringZAna();
+    explicit PrefiringJetAna(const edm::ParameterSet&);
+    ~PrefiringJetAna();
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -68,10 +69,8 @@ class PrefiringZAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
     // virtual void endJob() override;
 
-    edm::EDGetTokenT<pat::ElectronCollection> electronToken_;
-    // edm::EDGetTokenT<edm::ValueMap<bool>> mediumIdToken_;
-    edm::EDGetTokenT<reco::VertexCollection> vertexToken_;
-    StringCutObjectSelector<pat::Electron> tagElectronCut_;
+    edm::EDGetTokenT<pat::JetCollection> jetToken_;
+    StringCutObjectSelector<pat::Jet> tagJetCut_;
     edm::EDGetTokenT<BXVector<l1t::EGamma>> l1egToken_;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
     edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
@@ -80,11 +79,9 @@ class PrefiringZAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     EventStruct event_;
 };
 
-PrefiringZAna::PrefiringZAna(const edm::ParameterSet& iConfig):
-  electronToken_(consumes<pat::ElectronCollection>(iConfig.getParameter<edm::InputTag>("electronSrc"))),
-  //  mediumIdToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("mediumId"))),
-  vertexToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexSrc"))),
-  tagElectronCut_(iConfig.getParameter<std::string>("tagElectronCut")),
+PrefiringJetAna::PrefiringJetAna(const edm::ParameterSet& iConfig):
+  jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jetSrc"))),
+  tagJetCut_(iConfig.getParameter<std::string>("tagJetCut")),
   l1egToken_(consumes<BXVector<l1t::EGamma>>(iConfig.getParameter<edm::InputTag>("l1egSrc"))),
   triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
   triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales")))
@@ -97,19 +94,21 @@ PrefiringZAna::PrefiringZAna(const edm::ParameterSet& iConfig):
   tree_->Branch("lumi", &event_.lumi);
   tree_->Branch("event", &event_.event);
   tree_->Branch("bunchCrossing", &event_.bunchCrossing);
-  tree_->Branch("tag_electron", &event_.tag_electron);
+  tree_->Branch("jet_p4", &event_.jet_p4);
+  tree_->Branch("jet_neutralEmFrac", &event_.jet_neutralEmFrac);
+  tree_->Branch("jet_neutralHadFrac", &event_.jet_neutralHadFrac);
   tree_->Branch("L1EG_bx", &event_.L1EG_bx);
   tree_->Branch("L1EG_p4", &event_.L1EG_p4);
   tree_->Branch("L1EG_iso", &event_.L1EG_iso);
 }
 
 
-PrefiringZAna::~PrefiringZAna()
+PrefiringJetAna::~PrefiringJetAna()
 {
 }
 
 void
-PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
 
@@ -118,16 +117,8 @@ PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   event_.event = iEvent.id().event();
   event_.bunchCrossing = iEvent.bunchCrossing();
 
-  Handle<pat::ElectronCollection> electronHandle;
-  iEvent.getByToken(electronToken_, electronHandle);
-  // const auto inputId = electronHandle.id();
-
-  // Handle<ValueMap<bool>> mediumIdHandle;
-  // iEvent.getByToken(mediumIdToken_, mediumIdHandle);
-
-  Handle<reco::VertexCollection> vertexHandle;
-  iEvent.getByToken(vertexToken_, vertexHandle);
-  const auto& pv = vertexHandle->at(0);
+  Handle<pat::JetCollection> jetHandle;
+  iEvent.getByToken(jetToken_, jetHandle);
 
   Handle<BXVector<l1t::EGamma>> l1egHandle;
   iEvent.getByToken(l1egToken_, l1egHandle);
@@ -140,36 +131,15 @@ PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   const edm::TriggerResults& triggerResults = triggerPrescalesHandle->triggerResults();
 
 
-  pat::Electron * tagEl = nullptr;
-  for(size_t iEl=0; iEl<electronHandle->size(); ++iEl) {
-    // Writeable so cut string can access new data
-    pat::Electron el(electronHandle->at(iEl));
-
-    // el.addUserInt("MediumId", mediumIdHandle->get(inputId, iEl));
-    el.addUserFloat("dxy", el.gsfTrack()->dxy(pv.position()));
-    el.addUserFloat("dz", el.gsfTrack()->dz(pv.position()));
-
-    std::vector<const pat::TriggerObjectStandAlone*> matchedTrigObjs = getMatchedObjs(el.superCluster()->eta(), el.superCluster()->phi(), *triggerObjectsHandle, 0.3);
-    for (const auto trigObjConst : matchedTrigObjs) {
-      pat::TriggerObjectStandAlone trigObj(*trigObjConst);
-      trigObj.unpackNamesAndLabels(iEvent, triggerResults);
-      el.addTriggerObjectMatch(trigObj);
-      int passTrigger = 0;
-      if ( trigObj.hasFilterLabel("hltEle32L1DoubleEGWPTightGsfTrackIsoFilter") && trigObj.hasFilterLabel("hltEGL1SingleEGOrFilter") ) {
-        passTrigger = 1;
-      }
-      el.addUserInt("HLT_Ele32_WPTight_Gsf", passTrigger);
-    }
-
-    // take highest pt electron for now
-    if ( tagEl == nullptr and tagElectronCut_(el) ) {
-      tagEl = &el;
-    }
+  event_.jet_p4.clear();
+  event_.jet_neutralEmFrac.clear();
+  event_.jet_neutralHadFrac.clear();
+  for(const auto& jet : *jetHandle) {
+    if ( not tagJetCut_(jet) ) continue;
+    event_.jet_p4.push_back( jet.p4() );
+    event_.jet_neutralEmFrac.push_back( jet.neutralEmEnergyFraction() );
+    event_.jet_neutralHadFrac.push_back( jet.neutralHadronEnergyFraction() );
   }
-  if ( tagEl == nullptr ) return;
-
-  event_.tag_electron = tagEl->p4();
-
 
   event_.L1EG_bx.clear();
   event_.L1EG_p4.clear();
@@ -194,7 +164,7 @@ PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 void
-PrefiringZAna::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+PrefiringJetAna::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -203,4 +173,4 @@ PrefiringZAna::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 }
 
 
-DEFINE_FWK_MODULE(PrefiringZAna);
+DEFINE_FWK_MODULE(PrefiringJetAna);
