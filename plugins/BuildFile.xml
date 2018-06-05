@@ -6,4 +6,5 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/VertexReco"/>
 <use name="DataFormats/L1Trigger"/>
+<use name="PhysicsTools/SelectorUtils"/>
 <flags EDM_PLUGIN="1"/>

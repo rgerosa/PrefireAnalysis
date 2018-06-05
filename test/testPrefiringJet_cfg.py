@@ -40,8 +40,9 @@ process.prefireVetoFilter = cms.EDFilter("TriggerRulePrefireVetoFilter",
 
 process.ntuple = cms.EDAnalyzer("PrefiringJetAna",
     jetSrc = cms.InputTag("slimmedJets"),
-    tagJetCut = cms.string("pt > 30"),
+    tagJetCut = cms.string("pt > 30 && userInt('looseJetId')"),
     l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    l1GtSrc = cms.InputTag("gtStage2Digis"),
     triggerObjects = cms.InputTag("slimmedPatTrigger"),
     triggerPrescales = cms.InputTag("patTrigger"),
 )

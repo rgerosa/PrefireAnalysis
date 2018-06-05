@@ -17,7 +17,9 @@
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 #include "DataFormats/L1Trigger/interface/EGamma.h"
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h"
 #include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
@@ -43,6 +45,8 @@ namespace {
     std::vector<int> L1EG_bx;
     std::vector<LorentzVector> L1EG_p4;
     std::vector<int> L1EG_iso;
+
+    std::vector<int> L1GtBx;
   };
 
   std::vector<const pat::TriggerObjectStandAlone*> getMatchedObjs(const float eta, const float phi, const std::vector<pat::TriggerObjectStandAlone>& trigObjs, const float maxDeltaR=0.1)
@@ -69,9 +73,13 @@ class PrefiringJetAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  
     virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
     // virtual void endJob() override;
 
+    PFJetIDSelectionFunctor looseJetIdSelector_{PFJetIDSelectionFunctor::WINTER16, PFJetIDSelectionFunctor::LOOSE};
+    pat::strbitset hasLooseId_;
+
     edm::EDGetTokenT<pat::JetCollection> jetToken_;
     StringCutObjectSelector<pat::Jet> tagJetCut_;
     edm::EDGetTokenT<BXVector<l1t::EGamma>> l1egToken_;
+    edm::EDGetTokenT<BXVector<GlobalAlgBlk>> l1GtToken_;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
     edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
 
@@ -83,11 +91,14 @@ PrefiringJetAna::PrefiringJetAna(const edm::ParameterSet& iConfig):
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jetSrc"))),
   tagJetCut_(iConfig.getParameter<std::string>("tagJetCut")),
   l1egToken_(consumes<BXVector<l1t::EGamma>>(iConfig.getParameter<edm::InputTag>("l1egSrc"))),
+  l1GtToken_(consumes<BXVector<GlobalAlgBlk>>(iConfig.getParameter<edm::InputTag>("l1GtSrc"))),
   triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
   triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales")))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
+
+  hasLooseId_ = looseJetIdSelector_.getBitTemplate();
 
   tree_ = fs->make<TTree>("tree","Event Summary");
   tree_->Branch("run", &event_.run);
@@ -100,6 +111,7 @@ PrefiringJetAna::PrefiringJetAna(const edm::ParameterSet& iConfig):
   tree_->Branch("L1EG_bx", &event_.L1EG_bx);
   tree_->Branch("L1EG_p4", &event_.L1EG_p4);
   tree_->Branch("L1EG_iso", &event_.L1EG_iso);
+  tree_->Branch("L1GtBx", &event_.L1GtBx);
 }
 
 
@@ -123,6 +135,9 @@ PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   Handle<BXVector<l1t::EGamma>> l1egHandle;
   iEvent.getByToken(l1egToken_, l1egHandle);
 
+  Handle<BXVector<GlobalAlgBlk>> l1GtHandle;
+  iEvent.getByToken(l1GtToken_, l1GtHandle);
+
   Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
   iEvent.getByToken(triggerObjectsToken_, triggerObjectsHandle);
 
@@ -135,10 +150,14 @@ PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   event_.jet_neutralEmFrac.clear();
   event_.jet_neutralHadFrac.clear();
   for(const auto& jet : *jetHandle) {
-    if ( not tagJetCut_(jet) ) continue;
-    event_.jet_p4.push_back( jet.p4() );
-    event_.jet_neutralEmFrac.push_back( jet.neutralEmEnergyFraction() );
-    event_.jet_neutralHadFrac.push_back( jet.neutralHadronEnergyFraction() );
+    pat::Jet jetNew(jet);
+    jetNew.addUserInt("looseJetId", looseJetIdSelector_(jetNew, hasLooseId_));
+
+    if ( not tagJetCut_(jetNew) ) continue;
+
+    event_.jet_p4.push_back( jetNew.p4() );
+    event_.jet_neutralEmFrac.push_back( jetNew.neutralEmEnergyFraction() );
+    event_.jet_neutralHadFrac.push_back( jetNew.neutralHadronEnergyFraction() );
   }
 
   event_.L1EG_bx.clear();
@@ -158,6 +177,13 @@ PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   readBx(*l1egHandle,  0);
   readBx(*l1egHandle,  1);
   readBx(*l1egHandle,  2);
+
+  event_.L1GtBx.clear();
+  event_.L1GtBx.push_back(l1GtHandle->begin(-2)->getFinalORPreVeto());
+  event_.L1GtBx.push_back(l1GtHandle->begin(-1)->getFinalORPreVeto());
+  event_.L1GtBx.push_back(l1GtHandle->begin( 0)->getFinalORPreVeto());
+  event_.L1GtBx.push_back(l1GtHandle->begin( 1)->getFinalORPreVeto());
+  event_.L1GtBx.push_back(l1GtHandle->begin( 2)->getFinalORPreVeto());
 
   tree_->Fill();
 }

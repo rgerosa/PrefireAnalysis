@@ -16,7 +16,6 @@ config.Data.publication = False
 #config.Data.allowNonValidInputDataset = True
 config.Data.unitsPerJob = 1
 #config.JobType.numCores = 4
-config.Data.lumiMask ='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
 config.Data.useParent = True
 
 config.Site.storageSite = 'T2_US_Wisconsin'
@@ -24,6 +23,8 @@ config.Site.storageSite = 'T2_US_Wisconsin'
 
 pds = [
     '/JetHT/Run2017F-31Mar2018-v1/MINIAOD',
+    '/JetHT/Run2017B-31Mar2018-v1/MINIAOD',
+    '/JetHT/Run2016H-03Feb2017_ver3-v1/MINIAOD',
 ]
 
 if __name__ == '__main__':
@@ -44,4 +45,8 @@ if __name__ == '__main__':
         config.General.requestName = 'prefiringJet_%d_%s' % (i, primaryDS)
         config.Data.outputDatasetTag = conditions
         config.Data.inputDataset = pd
+        if 'Run2017' in conditions:
+            config.Data.lumiMask ='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
+        elif 'Run2016' in conditions:
+            config.Data.lumiMask ='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
         submit(config)
