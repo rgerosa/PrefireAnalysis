@@ -20,9 +20,6 @@
 #include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 #include "DataFormats/L1Trigger/interface/EGamma.h"
 #include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h"
-#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
-#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
-#include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
 
 #include "TTree.h"
 
@@ -48,17 +45,6 @@ namespace {
 
     std::vector<int> L1GtBx;
   };
-
-  std::vector<const pat::TriggerObjectStandAlone*> getMatchedObjs(const float eta, const float phi, const std::vector<pat::TriggerObjectStandAlone>& trigObjs, const float maxDeltaR=0.1)
-  {
-    std::vector<const pat::TriggerObjectStandAlone*> matchedObjs;
-    const float maxDR2 = maxDeltaR*maxDeltaR;
-    for(auto& trigObj : trigObjs){
-      const float dR2 = reco::deltaR2(eta,phi,trigObj.eta(),trigObj.phi());
-      if(dR2<maxDR2) matchedObjs.push_back(&trigObj);
-    }
-    return matchedObjs;
-  }
 }
 
 class PrefiringJetAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
@@ -80,8 +66,6 @@ class PrefiringJetAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  
     StringCutObjectSelector<pat::Jet> tagJetCut_;
     edm::EDGetTokenT<BXVector<l1t::EGamma>> l1egToken_;
     edm::EDGetTokenT<BXVector<GlobalAlgBlk>> l1GtToken_;
-    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
-    edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
 
     TTree * tree_;
     EventStruct event_;
@@ -91,9 +75,7 @@ PrefiringJetAna::PrefiringJetAna(const edm::ParameterSet& iConfig):
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jetSrc"))),
   tagJetCut_(iConfig.getParameter<std::string>("tagJetCut")),
   l1egToken_(consumes<BXVector<l1t::EGamma>>(iConfig.getParameter<edm::InputTag>("l1egSrc"))),
-  l1GtToken_(consumes<BXVector<GlobalAlgBlk>>(iConfig.getParameter<edm::InputTag>("l1GtSrc"))),
-  triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
-  triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales")))
+  l1GtToken_(consumes<BXVector<GlobalAlgBlk>>(iConfig.getParameter<edm::InputTag>("l1GtSrc")))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -137,13 +119,6 @@ PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   Handle<BXVector<GlobalAlgBlk>> l1GtHandle;
   iEvent.getByToken(l1GtToken_, l1GtHandle);
-
-  Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
-  iEvent.getByToken(triggerObjectsToken_, triggerObjectsHandle);
-
-  Handle<pat::PackedTriggerPrescales> triggerPrescalesHandle;
-  iEvent.getByToken(triggerPrescalesToken_, triggerPrescalesHandle);
-  const edm::TriggerResults& triggerResults = triggerPrescalesHandle->triggerResults();
 
 
   event_.jet_p4.clear();

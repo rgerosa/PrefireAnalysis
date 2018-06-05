@@ -1,6 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 
 from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing()
+options.register(
+    "is2017",
+    True,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "2017+ vs 2016 label name for trigger objects (slimmedPatTrigger vs. selectedPatTrigger)"
+)
+options.parseArguments()
 
 process = cms.Process("TEST")
 
@@ -46,7 +55,7 @@ process.ntuple = cms.EDAnalyzer("PrefiringZAna",
     vertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
     tagElectronCut = cms.string("pt > 30 && abs(eta) < 2.5 && electronID('cutBasedElectronID-Fall17-94X-V1-medium') && userInt('HLT_Ele32_WPTight_Gsf')"),
     l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
-    triggerObjects = cms.InputTag("slimmedPatTrigger"),
+    triggerObjects = cms.InputTag("slimmedPatTrigger" if options.is2017 else "selectedPatTrigger"),
     triggerPrescales = cms.InputTag("patTrigger"),
 )
 

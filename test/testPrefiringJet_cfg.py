@@ -43,8 +43,6 @@ process.ntuple = cms.EDAnalyzer("PrefiringJetAna",
     tagJetCut = cms.string("pt > 30 && userInt('looseJetId')"),
     l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
     l1GtSrc = cms.InputTag("gtStage2Digis"),
-    triggerObjects = cms.InputTag("slimmedPatTrigger"),
-    triggerPrescales = cms.InputTag("patTrigger"),
 )
 
 process.skimPath = cms.Path(process.prefireVetoFilter+process.ntuple)
