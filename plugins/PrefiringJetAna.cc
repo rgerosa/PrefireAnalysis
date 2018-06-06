@@ -154,11 +154,11 @@ PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   readBx(*l1egHandle,  2);
 
   event_.L1GtBx.clear();
-  event_.L1GtBx.push_back(l1GtHandle->begin(-2)->getFinalORPreVeto());
-  event_.L1GtBx.push_back(l1GtHandle->begin(-1)->getFinalORPreVeto());
-  event_.L1GtBx.push_back(l1GtHandle->begin( 0)->getFinalORPreVeto());
-  event_.L1GtBx.push_back(l1GtHandle->begin( 1)->getFinalORPreVeto());
-  event_.L1GtBx.push_back(l1GtHandle->begin( 2)->getFinalORPreVeto());
+  event_.L1GtBx.push_back(l1GtHandle->begin(-2)->getFinalOR());
+  event_.L1GtBx.push_back(l1GtHandle->begin(-1)->getFinalOR());
+  event_.L1GtBx.push_back(l1GtHandle->begin( 0)->getFinalOR());
+  event_.L1GtBx.push_back(l1GtHandle->begin( 1)->getFinalOR());
+  event_.L1GtBx.push_back(l1GtHandle->begin( 2)->getFinalOR());
 
   tree_->Fill();
 }

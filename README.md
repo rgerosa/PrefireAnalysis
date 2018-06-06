@@ -44,7 +44,7 @@ In your analysis chain, please save the uGT trigger decision (FinOR) of BX -1, a
 // analyze function...
   edm::Handle<BXVector<GlobalAlgBlk>> l1GtHandle;
   iEvent.getByToken(l1GtToken_, l1GtHandle);
-  bool prefire = l1GtHandle->begin(-1)->getFinalORPreVeto();
+  bool prefire = l1GtHandle->begin(-1)->getFinalOR();
 ```
 Then check with final selection how often this is true.  If the fraction is less than about 1%, then this means
 there is no prefiring, as there is always the possibility (~L1A rate / MinBias rate) that interesting physics is
