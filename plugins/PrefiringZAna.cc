@@ -155,6 +155,7 @@ PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       trigObj.unpackNamesAndLabels(iEvent, triggerResults);
       el.addTriggerObjectMatch(trigObj);
       int passTrigger = 0;
+      // TODO: can't use with 2016 data
       if ( trigObj.hasFilterLabel("hltEle32L1DoubleEGWPTightGsfTrackIsoFilter") && trigObj.hasFilterLabel("hltEGL1SingleEGOrFilter") ) {
         passTrigger = 1;
       }

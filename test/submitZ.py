@@ -24,6 +24,7 @@ config.Site.storageSite = 'T2_US_Wisconsin'
 
 pds = [
     '/SingleElectron/Run2017F-31Mar2018-v1/MINIAOD',
+    # '/SingleElectron/Run2016H-03Feb2017_ver3-v1/MINIAOD',  # Need proper tag trigger
 ]
 
 if __name__ == '__main__':
@@ -44,4 +45,8 @@ if __name__ == '__main__':
         config.General.requestName = 'prefiringZ_%d_%s' % (i, primaryDS)
         config.Data.outputDatasetTag = conditions
         config.Data.inputDataset = pd
+        if 'Run2016' in conditions:
+            config.JobType.pyCfgParams = ['is2016=1']
+        else:
+            config.JobType.pyCfgParams = ['is2016=0']
         submit(config)

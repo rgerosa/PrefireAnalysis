@@ -17,11 +17,11 @@ popd
 The idea is to select so-called 'unprefirable' events in whatever primary dataset is used for your analysis,
 and then to check how often a (vetoed) L1A is present in the previous bunch crossing via the uGT record.
 
-To select the events, the TCDS L1A record needs to be available.  For 2017 data, it is available in AOD
-as `tcdsDigis`, and an EDFilter is put in front of the analysis chain to read it: 
+To select the events, the TCDS L1A history needs to be available.  It is found in AOD data as `L1AcceptBunchCrossingCollection`
+with tag `scalersRawToDigi`, and an EDFilter is put in front of the analysis chain to read it: 
 ```python
 process.prefireVetoFilter = cms.EDFilter("TriggerRulePrefireVetoFilter",
-    tcdsRecordLabel = cms.InputTag("tcdsDigis:tcdsRecord"),
+    l1AcceptRecordLabel = cms.InputTag("scalersRawToDigi"),
 )
 
 process.myPath = cms.Path(process.prefireVetoFilter + process.analysisChain)
