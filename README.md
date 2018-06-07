@@ -2,6 +2,20 @@ PrefireAnalysis
 ===============
 This package helps analyse the effect of prefiring (particularly from EE in late 2017) on an analysis.
 
+# Event lists
+Rather than run the unprefirable event filter (which requires AOD data tier), it may be simpler/faster to use event lists.
+You will still need to save the trigger information from the previous bunch crossing, discussed below.
+The following lists have been prepared:
+
+| Primary Dataset | Unprefirable event count | ROOT file |
+| ---------------------------- | ------------------------ | --------- |
+| `JetHT/Run2017F-31Mar2018-v1` | 282287 | `root://eoscms.cern.ch//eos/cms/store/user/ncsmith/unprefirableEventLists/JetHT_Run2017F_unprefirableEvents.root`
+| `SingleElectron/Run2017F-31Mar2018-v1` | 143101 | `root://eoscms.cern.ch//eos/cms/store/user/ncsmith/unprefirableEventLists/SingleElectron_Run2017F_unprefirableEvents.root`
+
+Run2017 lists prepared with `Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt` lumimask.
+Some events may be missing due to failed jobs, which is fine.
+
+
 # Installation
 This should work in any `94X` CMSSW or newer
 ```bash
@@ -47,6 +61,6 @@ In your analysis chain, please save the uGT trigger decision (FinOR) of BX -1, a
   bool prefire = l1GtHandle->begin(-1)->getFinalOR();
 ```
 Then check with final selection how often this is true.  If the fraction is less than about 1%, then this means
-there is no prefiring, as there is always the possibility (~L1A rate / MinBias rate) that interesting physics is
+there is no significant prefiring, as there is always the possibility (~L1A rate / MinBias rate) that interesting physics is
 in the previous bunch crossing.  If much larger, then this is telling you the fraction of data in your phase
 space lost due to prefiring.
