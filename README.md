@@ -9,8 +9,10 @@ The following lists have been prepared:
 
 | Primary Dataset | Unprefirable event count | ROOT file |
 | --- | --- | --- |
-| `JetHT/Run2017F-31Mar2018-v1` | 282287 | https://ncsmith.web.cern.ch/ncsmith/UnprefirableEventLists/JetHT_Run2017F_unprefirableEvents.root
-| `SingleElectron/Run2017F-31Mar2018-v1` | 143101 | https://ncsmith.web.cern.ch/ncsmith/UnprefirableEventLists/SingleElectron_Run2017F_unprefirableEvents.root
+| `JetHT/Run2017F-31Mar2018-v1` | 282287 | https://ncsmith.web.cern.ch/ncsmith/UnprefirableEventLists/JetHT_Run2017F_unprefirableEvents.root |
+| `SingleElectron/Run2017F-31Mar2018-v1` | 143101 | https://ncsmith.web.cern.ch/ncsmith/UnprefirableEventLists/SingleElectron_Run2017F_unprefirableEvents.root |
+| `SingleMuon/Run2017F-31Mar2018-v1` | 635747 | https://ncsmith.web.cern.ch/ncsmith/UnprefirableEventLists/SingleMuon_Run2017F_unprefirableEvents.root |
+| `MET/Run2017F-31Mar2018-v1` | 367374 | https://ncsmith.web.cern.ch/ncsmith/UnprefirableEventLists/MET_Run2017F_unprefirableEvents.root |
 
 Run2017 lists prepared with `Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt` lumimask.
 Some events may be missing due to failed jobs, which is fine.
