@@ -57,7 +57,18 @@ process.ntuple = cms.EDAnalyzer("PrefiringJetAna",
     l1GtSrc = cms.InputTag("gtStage2Digis"),
 )
 
-process.skimPath = cms.Path(process.prefireVetoFilter+process.ntuple)
+process.bxm1_pass = cms.EDAnalyzer("L1EGCheck",
+    l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    bx = cms.int32(-1),
+)
+
+process.bxm1_fail = cms.EDAnalyzer("L1EGCheck",
+    l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    bx = cms.int32(-1),
+)
+
+process.skimPath = cms.Path(process.prefireVetoFilter+process.bxm1_pass+process.ntuple)
+process.checkPath = cms.Path(~process.prefireVetoFilter+process.bxm1_fail)
 
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string("ntuple.root"),

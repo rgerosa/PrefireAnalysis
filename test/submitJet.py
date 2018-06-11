@@ -28,6 +28,12 @@ pds = [
     '/JetHT/Run2016H-03Feb2017_ver2-v1/MINIAOD',
     '/SingleMuon/Run2017F-31Mar2018-v1/MINIAOD',
     '/MET/Run2017F-31Mar2018-v1/MINIAOD',
+    '/JetHT/Run2016B-03Feb2017_ver2-v2/MINIAOD',
+    '/JetHT/Run2016C-03Feb2017-v1/MINIAOD',
+    '/JetHT/Run2016D-03Feb2017-v1/MINIAOD',
+    '/JetHT/Run2016E-03Feb2017-v1/MINIAOD',
+    '/JetHT/Run2016F-03Feb2017-v1/MINIAOD',
+    '/JetHT/Run2016G-03Feb2017-v1/MINIAOD',
 ]
 
 if __name__ == '__main__':
