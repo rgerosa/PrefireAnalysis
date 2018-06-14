@@ -11,7 +11,7 @@ process.options = cms.untracked.PSet(
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring([
@@ -68,7 +68,8 @@ process.bxm1_fail = cms.EDAnalyzer("L1EGCheck",
 )
 
 process.skimPath = cms.Path(process.prefireVetoFilter+process.bxm1_pass+process.ntuple)
-process.checkPath = cms.Path(~process.prefireVetoFilter+process.bxm1_fail)
+process.failntuple = process.ntuple.clone()
+process.checkPath = cms.Path(~process.prefireVetoFilter+process.bxm1_fail+process.failntuple)
 
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string("ntuple.root"),
