@@ -36,6 +36,7 @@ namespace {
     Long64_t lumi;
     Long64_t event;
     int bunchCrossing;
+    int triggerRule;
     
     std::vector<LorentzVector> jet_p4;
     std::vector<float> jet_neutralEmFrac;
@@ -70,6 +71,7 @@ class PrefiringJetAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  
     PFJetIDSelectionFunctor looseJetIdSelector_{PFJetIDSelectionFunctor::WINTER16, PFJetIDSelectionFunctor::LOOSE};
     pat::strbitset hasLooseId_;
 
+    edm::EDGetTokenT<int> triggerRuleToken_;
     edm::EDGetTokenT<pat::JetCollection> jetToken_;
     edm::EDGetTokenT<pat::METCollection> metToken_;
     StringCutObjectSelector<pat::Jet> tagJetCut_;
@@ -82,6 +84,7 @@ class PrefiringJetAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 };
 
 PrefiringJetAna::PrefiringJetAna(const edm::ParameterSet& iConfig):
+  triggerRuleToken_(consumes<int>(iConfig.getParameter<edm::InputTag>("triggerRule"))),
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jetSrc"))),
   metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("metSrc"))),
   tagJetCut_(iConfig.getParameter<std::string>("tagJetCut")),
@@ -99,6 +102,7 @@ PrefiringJetAna::PrefiringJetAna(const edm::ParameterSet& iConfig):
   tree_->Branch("lumi", &event_.lumi);
   tree_->Branch("event", &event_.event);
   tree_->Branch("bunchCrossing", &event_.bunchCrossing);
+  tree_->Branch("triggerRule", &event_.triggerRule);
   tree_->Branch("jet_p4", &event_.jet_p4);
   tree_->Branch("jet_neutralEmFrac", &event_.jet_neutralEmFrac);
   tree_->Branch("jet_neutralHadFrac", &event_.jet_neutralHadFrac);
@@ -126,6 +130,10 @@ PrefiringJetAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   event_.lumi = iEvent.luminosityBlock();
   event_.event = iEvent.id().event();
   event_.bunchCrossing = iEvent.bunchCrossing();
+
+  Handle<int> triggerRuleHandle;
+  iEvent.getByToken(triggerRuleToken_, triggerRuleHandle);
+  event_.triggerRule = *triggerRuleHandle;
 
   Handle<pat::JetCollection> jetHandle;
   iEvent.getByToken(jetToken_, jetHandle);

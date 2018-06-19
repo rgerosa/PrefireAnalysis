@@ -51,6 +51,7 @@ process.prefireVetoFilter = cms.EDFilter("TriggerRulePrefireVetoFilter",
 )
 
 process.ntuple = cms.EDAnalyzer("PrefiringJetAna",
+    triggerRule = cms.InputTag("prefireVetoFilter:ruleIndex"),
     jetSrc = cms.InputTag("slimmedJets"),
     metSrc = cms.InputTag("slimmedMETs"),
     tagJetCut = cms.string("pt > 30 && userInt('looseJetId')"),
