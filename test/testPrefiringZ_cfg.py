@@ -74,6 +74,8 @@ process.ntuple = cms.EDAnalyzer("PrefiringZAna",
     vertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
     tagElectronCut = cms.string("pt > 25 && abs(eta) < 2.5 && electronID('%s') && userInt('pass%strigger')" % (eleID, '2016' if options.is2016 else '2017')),
     l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    l1jetSrc = cms.InputTag("caloStage2Digis:Jet"),
+    l1GtSrc = cms.InputTag("gtStage2Digis"),
     triggerObjects = cms.InputTag("selectedPatTrigger" if options.is2016 else "slimmedPatTrigger"),
     triggerPrescales = cms.InputTag("patTrigger"),
 )

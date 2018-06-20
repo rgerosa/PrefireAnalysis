@@ -21,6 +21,8 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/L1Trigger/interface/EGamma.h"
+#include "DataFormats/L1Trigger/interface/Jet.h"
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h"
 #include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
@@ -50,6 +52,11 @@ namespace {
     std::vector<int> L1EG_bx;
     std::vector<LorentzVector> L1EG_p4;
     std::vector<int> L1EG_iso;
+
+    std::vector<int> L1Jet_bx;
+    std::vector<LorentzVector> L1Jet_p4;
+
+    std::vector<int> L1GtBx;
   };
 
   std::vector<const pat::TriggerObjectStandAlone*> getMatchedObjs(const float eta, const float phi, const std::vector<pat::TriggerObjectStandAlone>& trigObjs, const float maxDeltaR=0.1)
@@ -83,6 +90,8 @@ class PrefiringZAna : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     StringCutObjectSelector<pat::Electron> tagElectronCut_;
     edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
     edm::EDGetTokenT<BXVector<l1t::EGamma>> l1egToken_;
+    edm::EDGetTokenT<BXVector<l1t::Jet>> l1jetToken_;
+    edm::EDGetTokenT<BXVector<GlobalAlgBlk>> l1GtToken_;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
     edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
 
@@ -98,6 +107,8 @@ PrefiringZAna::PrefiringZAna(const edm::ParameterSet& iConfig):
   tagElectronCut_(iConfig.getParameter<std::string>("tagElectronCut")),
   photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photonSrc"))),
   l1egToken_(consumes<BXVector<l1t::EGamma>>(iConfig.getParameter<edm::InputTag>("l1egSrc"))),
+  l1jetToken_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("l1jetSrc"))),
+  l1GtToken_(consumes<BXVector<GlobalAlgBlk>>(iConfig.getParameter<edm::InputTag>("l1GtSrc"))),
   triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
   triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales")))
 {
@@ -118,6 +129,9 @@ PrefiringZAna::PrefiringZAna(const edm::ParameterSet& iConfig):
   tree_->Branch("L1EG_bx", &event_.L1EG_bx);
   tree_->Branch("L1EG_p4", &event_.L1EG_p4);
   tree_->Branch("L1EG_iso", &event_.L1EG_iso);
+  tree_->Branch("L1Jet_bx", &event_.L1Jet_bx);
+  tree_->Branch("L1Jet_p4", &event_.L1Jet_p4);
+  tree_->Branch("L1GtBx", &event_.L1GtBx);
 }
 
 
@@ -155,6 +169,12 @@ PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   Handle<BXVector<l1t::EGamma>> l1egHandle;
   iEvent.getByToken(l1egToken_, l1egHandle);
+
+  Handle<BXVector<l1t::Jet>> l1jetHandle;
+  iEvent.getByToken(l1jetToken_, l1jetHandle);
+
+  Handle<BXVector<GlobalAlgBlk>> l1GtHandle;
+  iEvent.getByToken(l1GtToken_, l1GtHandle);
 
   Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
   iEvent.getByToken(triggerObjectsToken_, triggerObjectsHandle);
@@ -220,20 +240,27 @@ PrefiringZAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   event_.L1EG_bx.clear();
   event_.L1EG_p4.clear();
   event_.L1EG_iso.clear();
-
-  auto readBx = [&] (const BXVector<l1t::EGamma>& egVect, int bx) {
+  for (auto bx=l1egHandle->getFirstBX(); bx<l1egHandle->getLastBX()+1; ++bx) {
     for (auto itL1=l1egHandle->begin(bx); itL1!=l1egHandle->end(bx); ++itL1) {
       event_.L1EG_bx.push_back(bx);
       event_.L1EG_p4.push_back(itL1->p4());
       event_.L1EG_iso.push_back(itL1->hwIso());
     }
-  };
+  }
 
-  readBx(*l1egHandle, -2);
-  readBx(*l1egHandle, -1);
-  readBx(*l1egHandle,  0);
-  readBx(*l1egHandle,  1);
-  readBx(*l1egHandle,  2);
+  event_.L1Jet_bx.clear();
+  event_.L1Jet_p4.clear();
+  for (auto bx=l1jetHandle->getFirstBX(); bx<l1jetHandle->getLastBX()+1; ++bx) {
+    for (auto itL1=l1jetHandle->begin(bx); itL1!=l1jetHandle->end(bx); ++itL1) {
+      event_.L1Jet_bx.push_back(bx);
+      event_.L1Jet_p4.push_back(itL1->p4());
+    }
+  }
+
+  event_.L1GtBx.clear();
+  for (auto bx=l1GtHandle->getFirstBX(); bx<l1GtHandle->getLastBX()+1; ++bx) {
+    event_.L1GtBx.push_back(l1GtHandle->begin(bx)->getFinalOR());
+  }
 
   tree_->Fill();
 }
