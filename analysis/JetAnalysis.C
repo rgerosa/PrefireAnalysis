@@ -35,27 +35,28 @@ void JetAnalysis::Begin(TTree * /*tree*/)
 
   TString option = GetOption();
 
-  hJetPtEtaEGeffDenom_ = newOutput<TH2D>("denom", ";Jet p_{T} [GeV];Jet |#eta|;Counts", 20, 30, 630, 50, 0, 5);;
-  hJetPtEtaEGeffNum_bxm2_ = newOutput<TH2D>("num_bxm2", ";Jet p_{T} [GeV];Jet |#eta|;Counts", 20, 30, 630, 50, 0, 5);;
-  hJetPtEtaEGeffNum_bxm1_ = newOutput<TH2D>("num_bxm1", ";Jet p_{T} [GeV];Jet |#eta|;Counts", 20, 30, 630, 50, 0, 5);;
-  hJetPtEtaEGeffNum_bx0_ =  newOutput<TH2D>("num_bx0",  ";Jet p_{T} [GeV];Jet |#eta|;Counts", 20, 30, 630, 50, 0, 5);;
-  hJetPtEtaEGeffNum_bx1_ =  newOutput<TH2D>("num_bx1",  ";Jet p_{T} [GeV];Jet |#eta|;Counts", 20, 30, 630, 50, 0, 5);;
-  hJetPtEtaEGeffNum_bx2_ =  newOutput<TH2D>("num_bx2",  ";Jet p_{T} [GeV];Jet |#eta|;Counts", 20, 30, 630, 50, 0, 5);;
+  hJetPtEtaEGeffDenom_ = newOutput<TH2D>("denom", ";Jet p_{T}^{EM} [GeV];Jet |#eta|;Counts", 20, 0, 400, 50, 0, 5);;
+  hJetPtEtaEGeffNum_bxm2_ = newOutput<TH2D>("num_bxm2", ";Jet p_{T}^{EM} [GeV];Jet |#eta|;Counts", 20, 0, 400, 50, 0, 5);;
+  hJetPtEtaEGeffNum_bxm1_ = newOutput<TH2D>("num_bxm1", ";Jet p_{T}^{EM} [GeV];Jet |#eta|;Counts", 20, 0, 400, 50, 0, 5);;
+  hJetPtEtaEGeffNum_bx0_ =  newOutput<TH2D>("num_bx0",  ";Jet p_{T}^{EM} [GeV];Jet |#eta|;Counts", 20, 0, 400, 50, 0, 5);;
+  hJetPtEtaEGeffNum_bx1_ =  newOutput<TH2D>("num_bx1",  ";Jet p_{T}^{EM} [GeV];Jet |#eta|;Counts", 20, 0, 400, 50, 0, 5);;
+  hJetPtEtaEGeffNum_bx2_ =  newOutput<TH2D>("num_bx2",  ";Jet p_{T}^{EM} [GeV];Jet |#eta|;Counts", 20, 0, 400, 50, 0, 5);;
 
-  hJet100EGEtaPhi_ = newOutput<TH2D>("jet100EGEtaPhi", ";L1EG #eta;L1EG #phi;Counts", 57, -3, 3, 72, -3.1415, 3.1415);
+  hJet30EGEtaPhi_ = newOutput<TH2D>("jet30EGEtaPhi", ";L1EG #eta;L1EG #phi;Counts", 57, -3, 3, 72, -3.1415, 3.1415);
 
-  hJetL1ADenom_ = newOutput<TH1D>("denomL1A", ";Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetL1ANum_bxm2_ = newOutput<TH1D>("numL1A_bxm2", ";Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetL1ANum_bxm1_ = newOutput<TH1D>("numL1A_bxm1", ";Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetL1ANum_bx0_  = newOutput<TH1D>("numL1A_bx0",  ";Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetL1ANum_bx1_  = newOutput<TH1D>("numL1A_bx1",  ";Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetL1ANum_bx2_  = newOutput<TH1D>("numL1A_bx2",  ";Jet p_{T} [GeV];Counts", 20, 30, 630);
+  hJetL1ADenom_ = newOutput<TH1D>("denomL1A", ";Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetL1ANum_bxm2_ = newOutput<TH1D>("numL1A_bxm2", ";Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetL1ANum_bxm1_ = newOutput<TH1D>("numL1A_bxm1", ";Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetL1ANum_bx0_  = newOutput<TH1D>("numL1A_bx0",  ";Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetL1ANum_bx1_  = newOutput<TH1D>("numL1A_bx1",  ";Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetL1ANum_bx2_  = newOutput<TH1D>("numL1A_bx2",  ";Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
 
-  hJetEGm1thrDenom_ = newOutput<TH1D>("denomJetEGthr", ";Jet p_{T} [GeV];L1EG in BX -1 Efficiency", 20, 30, 630);
-  hJetEGm1thrNum_EG22_ = newOutput<TH1D>("numJetEGthr_eg22", "L1IsoEG22;Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetEGm1thrNum_EG26_ = newOutput<TH1D>("numJetEGthr_eg26", "L1IsoEG26;Jet p_{T} [GeV];Counts", 20, 30, 630);
-  hJetEGm1thrNum_EG30_ = newOutput<TH1D>("numJetEGthr_eg30", "L1IsoEG30;Jet p_{T} [GeV];Counts", 20, 30, 630);
+  hJetEGm1thrDenom_ = newOutput<TH1D>("denomJetEGthr", ";Jet p_{T}^{EM} [GeV];L1EG in BX -1 Efficiency", 20, 0, 400);
+  hJetEGm1thrNum_EGlow_ = newOutput<TH1D>("numJetEGthr_eglow", "L1IsoEGlow;Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetEGm1thrNum_EGmed_ = newOutput<TH1D>("numJetEGthr_egmed", "L1IsoEGmed;Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
+  hJetEGm1thrNum_EGhigh_ = newOutput<TH1D>("numJetEGthr_eghigh", "L1IsoEGhigh;Jet p_{T}^{EM} [GeV];Counts", 20, 0, 400);
 
+  hJetEGdeltaR_ = newOutput<TH1D>("jetEGdeltaR", "DR;#DeltaR(j,EG);Counts", 50, 0, 1);
 }
 
 void JetAnalysis::SlaveBegin(TTree * /*tree*/)
@@ -79,12 +80,15 @@ Bool_t JetAnalysis::Process(Long64_t entry)
   for(size_t iJet=0; iJet<jet_p4.GetSize(); ++iJet) {
     auto& jet = jet_p4[iJet];
 
-    hJetPtEtaEGeffDenom_->Fill(jet.Pt(), std::abs(jet.Eta()));
+    hJetPtEtaEGeffDenom_->Fill(jet_neutralEmFrac[iJet]*jet.Pt(), std::abs(jet.Eta()));
     if ( std::abs(jet.Eta()) >= 2.5 and std::abs(jet.Eta()) < 3. ) {
-      hJetEGm1thrDenom_->Fill(jet.Pt());
-      forwardJets.emplace_back(jet);
+      hJetEGm1thrDenom_->Fill(jet_neutralEmFrac[iJet]*jet.Pt());
+      forwardJets.emplace_back(jet*jet_neutralEmFrac[iJet]);
     }
     else if ( std::abs(jet.Eta()) >= 2.0 and std::abs(jet.Eta()) < 2.5 ) {
+      vetoMedJets = true;
+    }
+    else if ( std::abs(jet.Eta()) >= 3.0 ) {
       vetoMedJets = true;
     }
 
@@ -94,25 +98,28 @@ Bool_t JetAnalysis::Process(Long64_t entry)
     for(size_t iEG=0; iEG<L1EG_p4.GetSize(); ++iEG) {
       if ( L1EG_p4[iEG].Pt() > 30. and (L1EG_iso[iEG] & 0x1) and DeltaR(L1EG_p4[iEG], jet) < 0.4 ) {
         match_bx |= bit(L1EG_bx[iEG]+2);
-        if ( jet.Pt() > 10. and L1EG_bx[iEG] == -1 ) {
-          hJet100EGEtaPhi_->Fill(L1EG_p4[iEG].Eta(), L1EG_p4[iEG].Phi());
+        if ( jet_neutralEmFrac[iJet]*jet.Pt() > 30. and L1EG_bx[iEG] == -1 ) {
+          hJet30EGEtaPhi_->Fill(L1EG_p4[iEG].Eta(), L1EG_p4[iEG].Phi());
         }
       }
-      if ( std::abs(jet.Eta()) >= 2.5 and std::abs(jet.Eta()) < 3. and (L1EG_iso[iEG] & 0x1) and DeltaR(L1EG_p4[iEG], jet) < 0.4 ) {
-        if ( L1EG_p4[iEG].Pt() > 22. ) match_thr |= bit(0);
-        if ( L1EG_p4[iEG].Pt() > 26. ) match_thr |= bit(1);
-        if ( L1EG_p4[iEG].Pt() > 30. ) match_thr |= bit(2);
+      if ( std::abs(jet.Eta()) >= 2.5 and std::abs(jet.Eta()) < 3. and L1EG_bx[iEG] == -1 and (L1EG_iso[iEG] & 0x1) ) {
+        if ( L1EG_p4[iEG].Pt() > 20. ) hJetEGdeltaR_->Fill(DeltaR(L1EG_p4[iEG], jet));
+        if ( DeltaR(L1EG_p4[iEG], jet) < 0.4 ) {
+          if ( L1EG_p4[iEG].Pt() > 20. ) match_thr |= bit(0);
+          if ( L1EG_p4[iEG].Pt() > 30. ) match_thr |= bit(1);
+          if ( L1EG_p4[iEG].Pt() > 40. ) match_thr |= bit(2);
+        }
       }
     }
-    if ( match_bx & bit(-2+2) ) hJetPtEtaEGeffNum_bxm2_->Fill(jet.Pt(), std::abs(jet.Eta()));
-    if ( match_bx & bit(-1+2) ) hJetPtEtaEGeffNum_bxm1_->Fill(jet.Pt(), std::abs(jet.Eta()));
-    if ( match_bx & bit( 0+2) ) hJetPtEtaEGeffNum_bx0_ ->Fill(jet.Pt(), std::abs(jet.Eta()));
-    if ( match_bx & bit( 1+2) ) hJetPtEtaEGeffNum_bx1_ ->Fill(jet.Pt(), std::abs(jet.Eta()));
-    if ( match_bx & bit( 2+2) ) hJetPtEtaEGeffNum_bx2_ ->Fill(jet.Pt(), std::abs(jet.Eta()));
+    if ( match_bx & bit(-2+2) ) hJetPtEtaEGeffNum_bxm2_->Fill(jet_neutralEmFrac[iJet]*jet.Pt(), std::abs(jet.Eta()));
+    if ( match_bx & bit(-1+2) ) hJetPtEtaEGeffNum_bxm1_->Fill(jet_neutralEmFrac[iJet]*jet.Pt(), std::abs(jet.Eta()));
+    if ( match_bx & bit( 0+2) ) hJetPtEtaEGeffNum_bx0_ ->Fill(jet_neutralEmFrac[iJet]*jet.Pt(), std::abs(jet.Eta()));
+    if ( match_bx & bit( 1+2) ) hJetPtEtaEGeffNum_bx1_ ->Fill(jet_neutralEmFrac[iJet]*jet.Pt(), std::abs(jet.Eta()));
+    if ( match_bx & bit( 2+2) ) hJetPtEtaEGeffNum_bx2_ ->Fill(jet_neutralEmFrac[iJet]*jet.Pt(), std::abs(jet.Eta()));
 
-    if ( match_thr & bit(0) ) hJetEGm1thrNum_EG22_->Fill(jet.Pt());
-    if ( match_thr & bit(1) ) hJetEGm1thrNum_EG26_->Fill(jet.Pt());
-    if ( match_thr & bit(2) ) hJetEGm1thrNum_EG30_->Fill(jet.Pt());
+    if ( match_thr & bit(0) ) hJetEGm1thrNum_EGlow_->Fill(jet_neutralEmFrac[iJet]*jet.Pt());
+    if ( match_thr & bit(1) ) hJetEGm1thrNum_EGmed_->Fill(jet_neutralEmFrac[iJet]*jet.Pt());
+    if ( match_thr & bit(2) ) hJetEGm1thrNum_EGhigh_->Fill(jet_neutralEmFrac[iJet]*jet.Pt());
   }
 
   if ( forwardJets.size() == 1 and not vetoMedJets ) {

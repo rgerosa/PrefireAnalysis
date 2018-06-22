@@ -71,7 +71,7 @@ private :
   TH2D * hJetPtEtaEGeffNum_bx1_;
   TH2D * hJetPtEtaEGeffNum_bx2_;
 
-  TH2D * hJet100EGEtaPhi_;
+  TH2D * hJet30EGEtaPhi_;
 
   TH1D * hJetL1ADenom_;
   TH1D * hJetL1ANum_bxm2_;
@@ -81,9 +81,11 @@ private :
   TH1D * hJetL1ANum_bx2_;
 
   TH1D * hJetEGm1thrDenom_;
-  TH1D * hJetEGm1thrNum_EG22_;
-  TH1D * hJetEGm1thrNum_EG26_;
-  TH1D * hJetEGm1thrNum_EG30_;
+  TH1D * hJetEGm1thrNum_EGlow_;
+  TH1D * hJetEGm1thrNum_EGmed_;
+  TH1D * hJetEGm1thrNum_EGhigh_;
+
+  TH1D * hJetEGdeltaR_;
 
   template<typename T, typename... Args>
     T * newOutput(Args... args) {
