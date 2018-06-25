@@ -4,6 +4,8 @@ import ROOT
 ROOT.gStyle.SetOptDate(0)
 ROOT.gStyle.SetHistLineWidth(2)
 
+deltaR = ROOT.Math.VectorUtil.DeltaR
+
 f = ROOT.TFile.Open("prefiringZ_Run2017B.root")
 t = f.Get("ntuple/tree")
 
@@ -22,8 +24,11 @@ hp1.SetMarkerColor(ROOT.kBlue)
 hl1m1_pt = ROOT.TH1D("bxm1_pt", "L1EG in BX -1, 60<m_{e,L1EG}<100;p_{T}^{L1} [GeV];Counts / 10 GeV", 25, 0, 250)
 hl1m1_eta = ROOT.TH1D("bxm1_eta", "L1EG in BX -1, 60<m_{e,L1EG}<100;|#eta^{L1}|;Counts / 0.1", 6, 2.4, 3)
 
+hdr = ROOT.TH1D("dr", "dr;#DeltaR(L1EG, #gamma);Count", 50, 0, 1)
+npho = 0
+
 def l1egCut(l1eg, tag, iso):
-    dR = ROOT.Math.VectorUtil.DeltaR(l1eg, tag)
+    dR = deltaR(l1eg, tag)
     return l1eg.Pt() > 4.5 and abs(l1eg.Eta()) > 2.5 and abs(l1eg.Eta()) < 3.0 and dR > 0.2 and (iso&1)
     #return l1eg.Pt() > 15 and dR > 0.2 and (iso&1)
 
@@ -33,7 +38,12 @@ for i in xrange(t.GetEntries()):
         l1eg = t.L1EG_p4[iEG]
         bx = t.L1EG_bx[iEG]
         iso = t.L1EG_iso[iEG]
-    # for iEG in xrange(t.photon_p4.size()):
+        if abs(l1eg.Eta()) > 2.4:
+            for iPho in xrange(t.photon_p4.size()):
+                pho = t.photon_p4[iPho]
+                if abs(pho.Eta()) > 2.5:
+                    hdr.Fill(deltaR(l1eg, pho))
+        # for iEG in xrange(t.photon_p4.size()):
     #     l1eg = t.photon_p4[iEG]
     #     bx = 0
     #     iso = 1
