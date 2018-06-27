@@ -1,0 +1,5 @@
+*.root
+*.pyc
+*_C.d
+*_C.so
+*.pcm

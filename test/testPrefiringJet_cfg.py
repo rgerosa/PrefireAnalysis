@@ -11,7 +11,7 @@ process.options = cms.untracked.PSet(
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring([
@@ -51,13 +51,30 @@ process.prefireVetoFilter = cms.EDFilter("TriggerRulePrefireVetoFilter",
 )
 
 process.ntuple = cms.EDAnalyzer("PrefiringJetAna",
+    triggerRule = cms.InputTag("prefireVetoFilter:ruleIndex"),
     jetSrc = cms.InputTag("slimmedJets"),
+    metSrc = cms.InputTag("slimmedMETs"),
     tagJetCut = cms.string("pt > 30 && userInt('looseJetId')"),
     l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    l1jetSrc = cms.InputTag("caloStage2Digis:Jet"),
     l1GtSrc = cms.InputTag("gtStage2Digis"),
 )
 
-process.skimPath = cms.Path(process.prefireVetoFilter+process.ntuple)
+process.bxm1_pass = cms.EDAnalyzer("L1EGCheck",
+    l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    bx = cms.int32(-1),
+)
+
+process.bxm1_fail = cms.EDAnalyzer("L1EGCheck",
+    l1egSrc = cms.InputTag("caloStage2Digis:EGamma"),
+    bx = cms.int32(-1),
+)
+
+process.skimPath = cms.Path(process.prefireVetoFilter+process.bxm1_pass+process.ntuple)
+
+# process.failntuple = process.ntuple.clone()
+# process.checkPath = cms.Path(~process.prefireVetoFilter+process.bxm1_fail+process.failntuple)
+process.checkPath = cms.Path(~process.prefireVetoFilter+process.bxm1_fail)
 
 process.TFileService = cms.Service("TFileService",
     fileName = cms.string("ntuple.root"),

@@ -49,6 +49,7 @@ class TriggerRulePrefireVetoFilter : public edm::stream::EDFilter<> {
 TriggerRulePrefireVetoFilter::TriggerRulePrefireVetoFilter(const edm::ParameterSet& iConfig) :
   l1AcceptRecordToken_(consumes<L1AcceptBunchCrossingCollection>(iConfig.getParameter<edm::InputTag>("l1AcceptRecordLabel")))
 {
+  produces<int>("ruleIndex");
 
 }
 
@@ -85,35 +86,49 @@ TriggerRulePrefireVetoFilter::filter(edm::Event& iEvent, const edm::EventSetup& 
     }
   }
 
-  // Since history is sorted, we only need to check that the Nth history item is exactly
-  // k bunch crossings ago for the k in N trigger rule, as then BX -1 is excluded and BX 0 allowed
+  // Since history is sorted, we only need to check that the kth history item is exactly
+  // N bunch crossings ago for the k in N trigger rule, as then BX -1 is excluded and BX 0 allowed
 
   bool prefireIsVetoed{false};
+  std::unique_ptr<int> ruleIndex(new int{0});
 
   // No more than 1 L1A in 3 BX
   if ( eventHistory[0] < 3u ) {
     edm::LogError("TriggerRulePrefireVetoFilter") << "Found an L1A in an impossible location?! (1 in 3)";
   }
-  if ( eventHistory[0] == 3u ) prefireIsVetoed = true;
+  if ( eventHistory[0] == 3u ) {
+    prefireIsVetoed = true;
+    *ruleIndex = 1;
+  }
 
   // No more than 2 L1As in 25 BX
   if ( eventHistory[1] < 25u ) {
     edm::LogError("TriggerRulePrefireVetoFilter") << "Found an L1A in an impossible location?! (2 in 25)";
   }
-  if ( eventHistory[1] == 25u ) prefireIsVetoed = true;
+  if ( eventHistory[1] == 25u ) {
+    prefireIsVetoed = true;
+    *ruleIndex = 2;
+  }
 
   // No more than 3 L1As in 100 BX
   if ( eventHistory[2] < 100u ) {
     edm::LogError("TriggerRulePrefireVetoFilter") << "Found an L1A in an impossible location?! (3 in 100)";
   }
-  if ( eventHistory[2] == 100u ) prefireIsVetoed = true;
+  if ( eventHistory[2] == 100u ) {
+    prefireIsVetoed = true;
+    *ruleIndex = 3;
+  }
 
   // No more than 4 L1As in 240 BX
   if ( eventHistory[3] < 240u ) {
-    edm::LogError("TriggerRulePrefireVetoFilter") << "Found an L1A in an impossible location?! (3 in 100)";
+    edm::LogError("TriggerRulePrefireVetoFilter") << "Found an L1A in an impossible location?! (4 in 240)";
   }
-  if ( eventHistory[3] == 240u ) prefireIsVetoed = true;
+  if ( eventHistory[3] == 240u ) {
+    prefireIsVetoed = true;
+    *ruleIndex = 4;
+  }
 
+  iEvent.put(std::move(ruleIndex), "ruleIndex");
   return prefireIsVetoed;
 }
 

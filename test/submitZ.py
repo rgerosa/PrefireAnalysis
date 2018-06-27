@@ -16,15 +16,17 @@ config.Data.publication = False
 #config.Data.allowNonValidInputDataset = True
 config.Data.unitsPerJob = 1
 #config.JobType.numCores = 4
-config.Data.lumiMask ='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
 config.Data.useParent = True
 
 config.Site.storageSite = 'T2_US_Wisconsin'
 #config.Site.storageSite = 'T2_CH_CERN'
 
 pds = [
+    '/SingleElectron/Run2016G-03Feb2017-v1/MINIAOD',
+    '/SingleElectron/Run2016H-03Feb2017_ver2-v1/MINIAOD',
+    '/SingleElectron/Run2016H-03Feb2017_ver3-v1/MINIAOD',
+    '/SingleElectron/Run2017B-31Mar2018-v1/MINIAOD',
     '/SingleElectron/Run2017F-31Mar2018-v1/MINIAOD',
-    # '/SingleElectron/Run2016H-03Feb2017_ver3-v1/MINIAOD',  # Need proper tag trigger
 ]
 
 if __name__ == '__main__':
@@ -42,11 +44,13 @@ if __name__ == '__main__':
 
     for i, pd in enumerate(pds):
         (_, primaryDS, conditions, dataTier) = pd.split('/')
-        config.General.requestName = 'prefiringZ_%d_%s' % (i, primaryDS)
+        config.General.requestName = 'prefiringZ_%s_%s' % (primaryDS, conditions)
         config.Data.outputDatasetTag = conditions
         config.Data.inputDataset = pd
-        if 'Run2016' in conditions:
-            config.JobType.pyCfgParams = ['is2016=1']
-        else:
+        if 'Run2017' in conditions:
+            config.Data.lumiMask ='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
             config.JobType.pyCfgParams = ['is2016=0']
+        elif 'Run2016' in conditions:
+            config.Data.lumiMask ='/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+            config.JobType.pyCfgParams = ['is2016=1']
         submit(config)
