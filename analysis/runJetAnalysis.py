@@ -64,6 +64,7 @@ bx = [(-2, 'bxm2'), (-1, 'bxm1'), (0, 'bx0'), (1, 'bx1'), (2, 'bx2')]
 for ibx, bxn in bx:
     c = ROOT.TCanvas()
     eff = ROOT.TEfficiency(hists['num_'+bxn], hists['denom'])
+    eff.SetName("prefireEfficiencyMap")
     eff.Draw("colz")
     c.Paint()
     eff.GetPaintedHistogram().GetZaxis().SetTitle("L1IsoEG30 in BX %d Efficiency (#DeltaR<0.4)" % ibx)
@@ -71,6 +72,9 @@ for ibx, bxn in bx:
     header(hdr)
     c.Print(outDir+"/Jet_L1IsoEG30eff_%s_looseJet_%s.pdf" % (bxn, era))
     c.Print(outDir+"/Jet_L1IsoEG30eff_%s_looseJet_%s.root" % (bxn, era))
+    fout = ROOT.TFile(outDir+"/Map_Jet_L1IsoEG30eff_%s_looseJet_%s.root" % (bxn, era), "recreate")
+    eff.Write()
+    fout = None
     ROOT.SetOwnership(eff, False)
     ROOT.SetOwnership(c, False)
 
