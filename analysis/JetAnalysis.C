@@ -82,14 +82,21 @@ Bool_t JetAnalysis::Process(Long64_t entry)
   fReader.SetEntry(entry);
 
   // Central jet trigger
-  bool centralJetTrigger{false};
-  for(size_t iJet=0; iJet<jet_p4.GetSize(); ++iJet) {
-    // HLT_PFJet500
-    if ( std::abs(jet_p4[iJet].Eta()) < 1.5 and (jet_id[iJet]&8)==8 ) {
-      centralJetTrigger = true;
-    }
-  }
+  // bool centralJetTrigger{false};
+  // for(size_t iJet=0; iJet<jet_p4.GetSize(); ++iJet) {
+  //   // HLT_PFJet500
+  //   if ( std::abs(jet_p4[iJet].Eta()) < 1.5 and (jet_id[iJet]&8)==8 ) {
+  //     centralJetTrigger = true;
+  //   }
+  // }
   // if ( not centralJetTrigger ) return true;
+  
+  // Drop 2016H hotspot
+  // for(size_t iJet=0; iJet<jet_p4.GetSize(); ++iJet) {
+  //   if ( std::abs(jet_p4[iJet].Eta()+2.81) < 0.2 and std::abs(jet_p4[iJet].Phi()-2.07) < 0.2 ) {
+  //     return true;
+  //   }
+  // }
 
   bool vetoEvent{false};
   std::vector<LorentzVector> forwardJets;
