@@ -4,6 +4,8 @@ This package helps analyze the effect of prefiring (particularly from EE in late
 If interested in a full analysis, the installation and usage instructions are provided.
 For a simple method to establish the impact of prefiring on an analysis, see the jet prefire efficiency map section.
 
+Questions/comments: cms-l1t-ecal-prefiring@cern.ch
+
 ## Installation
 This should work in any `94X` CMSSW or newer
 ```bash
