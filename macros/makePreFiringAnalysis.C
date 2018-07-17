@@ -340,28 +340,7 @@ void makePreFiringAnalysis(string inputDIR,
     // fill the efficiency maps for L1EG triggers
     for(size_t ijet = 0; ijet < jet_p4->size(); ijet++){
 
-      // loop on the EG candidates related to that BX
-      int match_egiso_bx = 99;
-      LorentzVector EGiso_matched;
-      int match_eg_bx = 99;
-      LorentzVector EG_matched;
-      for(size_t iEGCand = 0; iEGCand < L1EG_p4->size(); iEGCand++){
-	if((L1EG_iso->at(iEGCand) & 1) == 1 and
-	   L1EG_p4->at(iEGCand).Pt() > 30. and 
-	   DeltaR(L1EG_p4->at(iEGCand),jet_p4->at(ijet)) < 0.4){	  
-	  if(L1EG_bx->at(iEGCand) < match_egiso_bx){ // one should take the minimum since will be the one pre-firing
-	    match_egiso_bx = L1EG_bx->at(iEGCand);
-	    EGiso_matched = L1EG_p4->at(iEGCand);
-	  }
-	}
-	if(L1EG_p4->at(iEGCand).Pt() > 40. and 
-	   DeltaR(L1EG_p4->at(iEGCand),jet_p4->at(ijet)) < 0.4){	  
-	  if(L1EG_bx->at(iEGCand) < match_eg_bx){ // one should take the minimum since will be the one pre-firing
-	    match_eg_bx = L1EG_bx->at(iEGCand);
-	    EG_matched = L1EG_p4->at(iEGCand);
-	  }
-	}
-      }
+      if(filterHotTowers and fabs(jet_p4->at(ijet).Eta()+2.82) < 0.4 and fabs(jet_p4->at(ijet).Phi()-2.0724) < 0.4) continue;
 
       // jet should not be matched with a L1Mu
       bool match_l1_mu_bx0 = false;
@@ -373,9 +352,25 @@ void makePreFiringAnalysis(string inputDIR,
       }
       if(match_l1_mu_bx0) continue;
 
-      /// check the hot tower
-      if(filterHotTowers and match_egiso_bx != 99 and fabs(EGiso_matched.Eta()+2.82) < 0.2 and fabs(EGiso_matched.Phi()-2.0724) < 0.2) continue; // no matching found --> skip event
-      if(filterHotTowers and match_eg_bx != 99 and fabs(EG_matched.Eta()+2.82) < 0.2 and fabs(EG_matched.Phi()-2.0724) < 0.2) continue; // no matching found --> skip event
+
+      // loop on the EG candidates related to that BX
+      int match_egiso_bx = 99;
+      int match_eg_bx = 99;
+      for(size_t iEGCand = 0; iEGCand < L1EG_p4->size(); iEGCand++){
+	if((L1EG_iso->at(iEGCand) & 1) == 1 and
+	   L1EG_p4->at(iEGCand).Pt() > 30. and 
+	   DeltaR(L1EG_p4->at(iEGCand),jet_p4->at(ijet)) < 0.4){	  
+	  if(L1EG_bx->at(iEGCand) < match_egiso_bx){ // one should take the minimum since will be the one pre-firing
+	    match_egiso_bx = L1EG_bx->at(iEGCand);
+	  }
+	}
+	if(L1EG_p4->at(iEGCand).Pt() > 40. and 
+	   DeltaR(L1EG_p4->at(iEGCand),jet_p4->at(ijet)) < 0.4){	  
+	  if(L1EG_bx->at(iEGCand) < match_eg_bx){ // one should take the minimum since will be the one pre-firing
+	    match_eg_bx = L1EG_bx->at(iEGCand);
+	  }
+	}
+      }
 
       // all jets
       denL1EGIso30_pt_eta->Fill(jet_p4->at(ijet).Pt(),fabs(jet_p4->at(ijet).Eta()));
@@ -470,6 +465,9 @@ void makePreFiringAnalysis(string inputDIR,
     int njet = 0;
     vector<LorentzVector> jet4V_vec;
     for(size_t ijet = 0; ijet < jet_p4->size(); ijet++){
+
+      if(filterHotTowers and fabs(jet_p4->at(ijet).Eta()+2.82) < 0.4 and fabs(jet_p4->at(ijet).Phi()-2.0724) < 0.4) continue;
+
       if(fabs(jet_p4->at(ijet).Eta()) >= 2.25 and fabs(jet_p4->at(ijet).Eta()) < 3.0){
 	bool match_l1_mu_bx0 = false;
 	for(size_t iMuCand = 0; iMuCand < L1Mu_p4->size(); iMuCand++){
@@ -479,8 +477,10 @@ void makePreFiringAnalysis(string inputDIR,
 	    match_l1_mu_bx0 = true;
 	}
 	if(match_l1_mu_bx0) continue;
+
 	njet++;
 	jet4V_vec.push_back(jet_p4->at(ijet));
+
       }    
     }
     
