@@ -16,13 +16,12 @@ void makeRatios(string inputFile_1, string inputFile_2, string outputDIR, string
   TGraphAsymmErrors* eff_eta_2p75_3p0_file1  = NULL;
   TGraphAsymmErrors* eff_eta_2p75_3p0_file2  = NULL;
 
-
-  eff_eta_2p25_2p5_file1  = ( (TGraphAsymmErrors*) input_1->Get("efficiency_EGOR_pt_eta_2p25_2p5"));
-  eff_eta_2p25_2p5_file2  = ( (TGraphAsymmErrors*) input_2->Get("efficiency_EGOR_pt_eta_2p25_2p5"));
-  eff_eta_2p5_2p75_file1  = ( (TGraphAsymmErrors*) input_1->Get("efficiency_EGOR_pt_eta_2p5_2p75"));
-  eff_eta_2p5_2p75_file2  = ( (TGraphAsymmErrors*) input_2->Get("efficiency_EGOR_pt_eta_2p5_2p75"));
-  eff_eta_2p75_3p0_file1  = ( (TGraphAsymmErrors*) input_1->Get("efficiency_EGOR_pt_eta_2p75_3p0"));
-  eff_eta_2p75_3p0_file2  = ( (TGraphAsymmErrors*) input_2->Get("efficiency_EGOR_pt_eta_2p75_3p0"));    
+  eff_eta_2p25_2p5_file1  = ( (TGraphAsymmErrors*) input_1->Get("efficiency_UGT_ptem_eta_2p25_2p5"));
+  eff_eta_2p25_2p5_file2  = ( (TGraphAsymmErrors*) input_2->Get("efficiency_UGT_ptem_eta_2p25_2p5"));
+  eff_eta_2p5_2p75_file1  = ( (TGraphAsymmErrors*) input_1->Get("efficiency_UGT_ptem_eta_2p5_2p75"));
+  eff_eta_2p5_2p75_file2  = ( (TGraphAsymmErrors*) input_2->Get("efficiency_UGT_ptem_eta_2p5_2p75"));
+  eff_eta_2p75_3p0_file1  = ( (TGraphAsymmErrors*) input_1->Get("efficiency_UGT_ptem_eta_2p75_3p0"));
+  eff_eta_2p75_3p0_file2  = ( (TGraphAsymmErrors*) input_2->Get("efficiency_UGT_ptem_eta_2p75_3p0"));    
 
   TGraphAsymmErrors* ratio_2p25_2p5 = new TGraphAsymmErrors();
   TGraphAsymmErrors* ratio_2p5_2p75 = new TGraphAsymmErrors();

@@ -17,11 +17,21 @@
 
 using namespace ROOT::Math::VectorUtil;
 
+float deltaPhi (float phi1, float phi2){
+  if(fabs(phi1-phi2) < TMath::Pi())
+    return fabs(phi1-phi2);
+  else
+    return 2*TMath::Pi()-fabs(phi1-phi2);
+}
+
+
+
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>> LorentzVector;
 
 enum class analysisRegion {MET,SingleMuon,JetHT};
 
 vector<float> pt_binning  = {30,40,50,65,80,100,125,150,175,200,225,250,275,300,400,500,600};
+vector<float> ptem_binning  = {30,40,50,60,70,80,90,100,125,150,175,200,250,300,400};
 vector<float> abseta_binning = {0.0,0.25,0.50,0.75,1.0,1.25,1.50,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,4.0};
 vector<float> eta_binning = {-4.0,-3.5,-3.0,-2.5,-2.0,-1.5,-1.0,-0.5,0.0,0.50,1.0,1.50,2.0,2.5,3.0,3.5,4.0};
 vector<float> phi_binning = {-3.14,-3.0,-2.75,-2.50,-2.25,-2.0,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0,0.25,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,2.75,3.0,3.14};
@@ -95,10 +105,8 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
 
   TTreeReaderValue<std::vector<int> > L1EGSeeds_bx (reader,"L1EGSeeds_bx");
   TTreeReaderValue<std::vector<int> > L1IsoEGSeeds_bx (reader,"L1IsoEGSeeds_bx");
-  //TTreeReaderValue<std::vector<int> > L1ETMSeeds_bx (reader,"L1ETMSeeds_bx");
   TTreeReaderValue<std::vector<std::string> > L1EGSeeds_name (reader,"L1EGSeeds_name");
   TTreeReaderValue<std::vector<std::string> > L1IsoEGSeeds_name (reader,"L1IsoEGSeeds_name");
-  //TTreeReaderValue<std::vector<std::string> > L1ETMSeeds_name (reader,"L1ETMSeeds_name");
 
   TTreeReaderValue<uint8_t> flaghbhenoise (reader,"flaghbhenoise");
   TTreeReaderValue<uint8_t> flaghbheiso (reader,"flaghbheiso");
@@ -253,6 +261,23 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
   UGT_pt_eta_2p5_2p75_bxm1->Sumw2();
   UGT_pt_eta_2p75_3p0_bxm1->Sumw2();
 
+  TH1F* UGT_ptem_eta_2p25_2p5_denom =  new TH1F("UGT_ptem_eta_2p25_2p5_denom","",ptem_binning.size()-1,&ptem_binning[0]);
+  TH1F* UGT_ptem_eta_2p5_2p75_denom =  new TH1F("UGT_ptem_eta_2p5_2p75_denom","",ptem_binning.size()-1,&ptem_binning[0]);
+  TH1F* UGT_ptem_eta_2p75_3p0_denom =  new TH1F("UGT_ptem_eta_2p75_3p0_denom","",ptem_binning.size()-1,&ptem_binning[0]);
+  TH1F* UGT_ptem_eta_2p25_2p5_bxm1 =  new TH1F("UGT_ptem_eta_2p25_2p5_bxm1","",ptem_binning.size()-1,&ptem_binning[0]);
+  TH1F* UGT_ptem_eta_2p5_2p75_bxm1 =  new TH1F("UGT_ptem_eta_2p5_2p75_bxm1","",ptem_binning.size()-1,&ptem_binning[0]);
+  TH1F* UGT_ptem_eta_2p75_3p0_bxm1 =  new TH1F("UGT_ptem_eta_2p75_3p0_bxm1","",ptem_binning.size()-1,&ptem_binning[0]);
+  UGT_ptem_eta_2p25_2p5_denom->Sumw2();
+  UGT_ptem_eta_2p5_2p75_denom->Sumw2();
+  UGT_ptem_eta_2p75_3p0_denom->Sumw2();
+  UGT_ptem_eta_2p25_2p5_bxm1->Sumw2();
+  UGT_ptem_eta_2p5_2p75_bxm1->Sumw2();
+  UGT_ptem_eta_2p75_3p0_bxm1->Sumw2();
+
+  TH1F* jet_emfraction_2p25_2p5 = new TH1F("jet_emfraction_2p25_2p5","jet_emfraction_2p25_2p5",100,0,1);
+  TH1F* jet_emfraction_2p5_2p75 = new TH1F("jet_emfraction_2p5_2p75","jet_emfraction_2p5_2p75",100,0,1);
+  TH1F* jet_emfraction_2p75_3p0 = new TH1F("jet_emfraction_2p75_3p0","jet_emfraction_2p75_3p0",100,0,1);
+  
   long int events_with_metfiters = 0;
   long int events_with_calomet = 0;
   long int events_with_loose_muons = 0;
@@ -347,7 +372,7 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
 
     // check the threshold for the EG seeds in this event --> if fired by a lower threshold EG seed compared to what expected --> change threshold
     for(size_t iseed = 0; iseed < L1EGSeeds_bx->size(); iseed++){
-      if(L1EGSeeds_bx->at(iseed) != -1 and L1EGSeeds_bx->at(iseed) != 0 and L1EGSeeds_bx->at(iseed) != -2) continue;
+      if(L1EGSeeds_bx->at(iseed) != -1) continue;
       TString name (L1EGSeeds_name->at(iseed));
       if(atof(name.ReplaceAll("L1_SingleEG","").Data()) < EG_threshold)
 	EG_threshold = atof(name.ReplaceAll("L1_SingleEG","").Data());
@@ -355,25 +380,16 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
 
     // check the threshold for the IsoEG seeds in this event --> if fired by a lower threshold EG seed compared to what expected --> change threshold
     for(size_t iseed = 0; iseed < L1IsoEGSeeds_bx->size(); iseed++){
-      if(L1IsoEGSeeds_bx->at(iseed) != -1 and L1IsoEGSeeds_bx->at(iseed) != 0 and L1IsoEGSeeds_bx->at(iseed) != -2) continue;
+      if(L1IsoEGSeeds_bx->at(iseed) != -1) continue;
       TString name (L1IsoEGSeeds_name->at(iseed));
       if(atof(name.ReplaceAll("L1_SingleIsoEG","")) < IsoEG_threshold)
 	IsoEG_threshold = atof(name.ReplaceAll("L1_SingleIsoEG","").Data());
     }
 
-    // check the threshold for the ETM seeds in this event 
-    //for(size_t iseed = 0; iseed < L1ETMSeeds_bx->size(); iseed++){
-    //  if(L1ETMSeeds_bx->at(iseed) != -1 and L1ETMSeeds_bx->at(iseed) != 0 and L1ETMSeeds_bx->at(iseed) != -2) continue;
-    //  TString name (L1ETMSeeds_name->at(iseed));
-    //  if(name.Contains("Dphi") or name.Contains("dphi") or name.Contains("Jet")) continue;
-    //  if(atof(name.ReplaceAll("L1_ETM","")) < ETM_threshold)
-    //	ETM_threshold = atof(name.ReplaceAll("L1_ETM","").Data());
-    //}
-
     // fill the efficiency maps for L1EG triggers
     for(size_t ijet = 0; ijet < jet_p4->size(); ijet++){
 
-      if(filterHotTowers and fabs(jet_p4->at(ijet).Eta()+2.82) < 0.4 and fabs(jet_p4->at(ijet).Phi()-2.0724) < 0.4) continue; 
+      if(filterHotTowers and fabs(jet_p4->at(ijet).Eta()+2.82) < 0.2 and fabs(deltaPhi(jet_p4->at(ijet).Phi(),2.0724)) < 0.2) continue; 
 
       // jet should not be matched with a L1Mu
       bool match_l1_mu_bx0 = false;
@@ -416,16 +432,22 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
       }
       
       if(fabs(jet_p4->at(ijet).Eta()) >= 2.25 and fabs(jet_p4->at(ijet).Eta()) < 2.5){
+	if(jet_p4->at(ijet).Pt() > jetpt_threshold)
+	  jet_emfraction_2p25_2p5->Fill(jet_neutralEmFrac->at(ijet));	
 	L1IsoEG_pt_eta_2p25_2p5_denom->Fill(jet_p4->at(ijet).Pt());
 	L1EG_pt_eta_2p25_2p5_denom->Fill(jet_p4->at(ijet).Pt());
 	L1EGOR_pt_eta_2p25_2p5_denom->Fill(jet_p4->at(ijet).Pt());
       }
       else if(fabs(jet_p4->at(ijet).Eta()) >= 2.5 and fabs(jet_p4->at(ijet).Eta()) < 2.75){
+	if(jet_p4->at(ijet).Pt() > jetpt_threshold)
+	  jet_emfraction_2p5_2p75->Fill(jet_neutralEmFrac->at(ijet));	
 	L1IsoEG_pt_eta_2p5_2p75_denom->Fill(jet_p4->at(ijet).Pt());
 	L1EG_pt_eta_2p5_2p75_denom->Fill(jet_p4->at(ijet).Pt());
 	L1EGOR_pt_eta_2p5_2p75_denom->Fill(jet_p4->at(ijet).Pt());
       }
       else if(fabs(jet_p4->at(ijet).Eta()) >= 2.75 and fabs(jet_p4->at(ijet).Eta()) < 3.0){
+	if(jet_p4->at(ijet).Pt() > jetpt_threshold)
+	  jet_emfraction_2p75_3p0->Fill(jet_neutralEmFrac->at(ijet));	
 	L1IsoEG_pt_eta_2p75_3p0_denom->Fill(jet_p4->at(ijet).Pt());
 	L1EG_pt_eta_2p75_3p0_denom->Fill(jet_p4->at(ijet).Pt());
 	L1EGOR_pt_eta_2p75_3p0_denom->Fill(jet_p4->at(ijet).Pt());
@@ -518,9 +540,10 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
     // Study the global trigger decision --> only events with 1-jet in the interesting region
     int njet = 0;
     vector<LorentzVector> jet4V_vec;
+    vector<int> jet_pos;
     for(size_t ijet = 0; ijet < jet_p4->size(); ijet++){
 
-      if(filterHotTowers and fabs(jet_p4->at(ijet).Eta()+2.82) < 0.4 and fabs(jet_p4->at(ijet).Phi()-2.0724) < 0.4) continue; 
+      if(filterHotTowers and fabs(jet_p4->at(ijet).Eta()+2.82) < 0.2 and fabs(deltaPhi(jet_p4->at(ijet).Phi(),2.0724)) < 0.2) continue; 
       
       // inside the pre-firing region
       if(fabs(jet_p4->at(ijet).Eta()) >= 2.25 and fabs(jet_p4->at(ijet).Eta()) < 3.0){
@@ -536,6 +559,7 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
 
 	njet++;
 	jet4V_vec.push_back(jet_p4->at(ijet));
+	jet_pos.push_back(ijet);
       }    
     }
     
@@ -556,76 +580,88 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
           match_ETM_bx = iETM-2;
       }
 
-      for(auto jet4V : jet4V_vec){
-		
+      for(size_t ijet = 0; ijet < jet4V_vec.size(); ijet++){
+	
 	// loop on the EG candidates related to that BX
 	int match_egiso_bx = 99;
 	int match_eg_bx    = 99;
 	for(size_t iEGCand = 0; iEGCand < L1EG_p4->size(); iEGCand++){
 	  if((L1EG_iso->at(iEGCand) & 1) == 1 and
 	     L1EG_p4->at(iEGCand).Pt() > IsoEG_threshold and 
-	     DeltaR(L1EG_p4->at(iEGCand),jet4V) < 0.4){	  
+	     DeltaR(L1EG_p4->at(iEGCand),jet4V_vec.at(ijet)) < 0.4){	  
 	    if(L1EG_bx->at(iEGCand) < match_egiso_bx){ // one should take the minimum since will be the one pre-firing
 	      match_egiso_bx = L1EG_bx->at(iEGCand);
 	    }
 	  }
 	  if(L1EG_p4->at(iEGCand).Pt() > EG_threshold and 
-	     DeltaR(L1EG_p4->at(iEGCand),jet4V) < 0.4){	  
+	     DeltaR(L1EG_p4->at(iEGCand),jet4V_vec.at(ijet)) < 0.4){	  
 	    if(L1EG_bx->at(iEGCand) < match_eg_bx){ // one should take the minimum since will be the one pre-firing
 	      match_eg_bx = L1EG_bx->at(iEGCand);
 	    }
 	  }
 	}
 	      
-	if(fabs(jet4V.Eta()) >= 2.25 and fabs(jet4V.Eta()) < 2.50)
-	  UGT_pt_eta_2p25_2p5_denom->Fill(jet4V.Pt());
-	else if(fabs(jet4V.Eta()) >= 2.50 and fabs(jet4V.Eta()) < 2.75)
-	  UGT_pt_eta_2p5_2p75_denom->Fill(jet4V.Pt());
-	else if(fabs(jet4V.Eta()) >= 2.75 and fabs(jet4V.Eta()) < 3.00)
-	  UGT_pt_eta_2p75_3p0_denom->Fill(jet4V.Pt());      
+	if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.25 and fabs(jet4V_vec.at(ijet).Eta()) < 2.50){
+	  UGT_pt_eta_2p25_2p5_denom->Fill(jet4V_vec.at(ijet).Pt());
+	  UGT_ptem_eta_2p25_2p5_denom->Fill(jet4V_vec.at(ijet).Pt()*jet_neutralEmFrac->at(jet_pos.at(ijet)));
+	}
+	else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.50 and fabs(jet4V_vec.at(ijet).Eta()) < 2.75){
+	  UGT_pt_eta_2p5_2p75_denom->Fill(jet4V_vec.at(ijet).Pt());
+	  UGT_ptem_eta_2p5_2p75_denom->Fill(jet4V_vec.at(ijet).Pt()*jet_neutralEmFrac->at(jet_pos.at(ijet)));
+	}
+	else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.75 and fabs(jet4V_vec.at(ijet).Eta()) < 3.00){
+	  UGT_pt_eta_2p75_3p0_denom->Fill(jet4V_vec.at(ijet).Pt());      
+	  UGT_ptem_eta_2p75_3p0_denom->Fill(jet4V_vec.at(ijet).Pt()*jet_neutralEmFrac->at(jet_pos.at(ijet)));
+	}
 
-	if(fabs(jet4V.Eta()) >= 2.25 and fabs(jet4V.Eta()) < 2.50)
-	  ETM_pt_eta_2p25_2p5_denom->Fill(jet4V.Pt());
-	else if(fabs(jet4V.Eta()) >= 2.50 and fabs(jet4V.Eta()) < 2.75)
-	  ETM_pt_eta_2p5_2p75_denom->Fill(jet4V.Pt());
-	else if(fabs(jet4V.Eta()) >= 2.75 and fabs(jet4V.Eta()) < 3.00)
-	  ETM_pt_eta_2p75_3p0_denom->Fill(jet4V.Pt());      
+	if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.25 and fabs(jet4V_vec.at(ijet).Eta()) < 2.50)
+	  ETM_pt_eta_2p25_2p5_denom->Fill(jet4V_vec.at(ijet).Pt());
+	else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.50 and fabs(jet4V_vec.at(ijet).Eta()) < 2.75)
+	  ETM_pt_eta_2p5_2p75_denom->Fill(jet4V_vec.at(ijet).Pt());
+	else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.75 and fabs(jet4V_vec.at(ijet).Eta()) < 3.00)
+	  ETM_pt_eta_2p75_3p0_denom->Fill(jet4V_vec.at(ijet).Pt());      
 
-	if(fabs(jet4V.Eta()) >= 2.25 and fabs(jet4V.Eta()) < 2.50)
-	  EGETM_pt_eta_2p25_2p5_denom->Fill(jet4V.Pt());
-	else if(fabs(jet4V.Eta()) >= 2.50 and fabs(jet4V.Eta()) < 2.75)
-	  EGETM_pt_eta_2p5_2p75_denom->Fill(jet4V.Pt());
-	else if(fabs(jet4V.Eta()) >= 2.75 and fabs(jet4V.Eta()) < 3.00)
-	  EGETM_pt_eta_2p75_3p0_denom->Fill(jet4V.Pt());      
+	if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.25 and fabs(jet4V_vec.at(ijet).Eta()) < 2.50)
+	  EGETM_pt_eta_2p25_2p5_denom->Fill(jet4V_vec.at(ijet).Pt());
+	else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.50 and fabs(jet4V_vec.at(ijet).Eta()) < 2.75)
+	  EGETM_pt_eta_2p5_2p75_denom->Fill(jet4V_vec.at(ijet).Pt());
+	else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.75 and fabs(jet4V_vec.at(ijet).Eta()) < 3.00)
+	  EGETM_pt_eta_2p75_3p0_denom->Fill(jet4V_vec.at(ijet).Pt());      
 
 	/// UGT decision
 	if(match_ug_bx == -1){
-	  if(fabs(jet4V.Eta()) >= 2.25 and fabs(jet4V.Eta()) < 2.5)
-	    UGT_pt_eta_2p25_2p5_bxm1->Fill(jet4V.Pt());
-	  else if(fabs(jet4V.Eta()) >= 2.5 and fabs(jet4V.Eta()) < 2.75)
-	    UGT_pt_eta_2p5_2p75_bxm1->Fill(jet4V.Pt());
-	  else if(fabs(jet4V.Eta()) >= 2.75 and fabs(jet4V.Eta()) < 3.0)
-	    UGT_pt_eta_2p75_3p0_bxm1->Fill(jet4V.Pt());	  
+	  if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.25 and fabs(jet4V_vec.at(ijet).Eta()) < 2.5){
+	    UGT_pt_eta_2p25_2p5_bxm1->Fill(jet4V_vec.at(ijet).Pt());
+	    UGT_ptem_eta_2p25_2p5_bxm1->Fill(jet4V_vec.at(ijet).Pt()*jet_neutralEmFrac->at(jet_pos.at(ijet)));
+	  }
+	  else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.5 and fabs(jet4V_vec.at(ijet).Eta()) < 2.75){
+	    UGT_pt_eta_2p5_2p75_bxm1->Fill(jet4V_vec.at(ijet).Pt());
+	    UGT_ptem_eta_2p5_2p75_bxm1->Fill(jet4V_vec.at(ijet).Pt()*jet_neutralEmFrac->at(jet_pos.at(ijet)));
+	  }
+	  else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.75 and fabs(jet4V_vec.at(ijet).Eta()) < 3.0){
+	    UGT_pt_eta_2p75_3p0_bxm1->Fill(jet4V_vec.at(ijet).Pt());	  
+	    UGT_ptem_eta_2p75_3p0_bxm1->Fill(jet4V_vec.at(ijet).Pt()*jet_neutralEmFrac->at(jet_pos.at(ijet)));
+	  }
 	}	
 
 	/// ETM decision
 	if(match_ETM_bx == -1){
-	  if(fabs(jet4V.Eta()) >= 2.25 and fabs(jet4V.Eta()) < 2.5)
-	    ETM_pt_eta_2p25_2p5_bxm1->Fill(jet4V.Pt());
-	  else if(fabs(jet4V.Eta()) >= 2.5 and fabs(jet4V.Eta()) < 2.75)
-	    ETM_pt_eta_2p5_2p75_bxm1->Fill(jet4V.Pt());
-	  else if(fabs(jet4V.Eta()) >= 2.75 and fabs(jet4V.Eta()) < 3.0)
-	    ETM_pt_eta_2p75_3p0_bxm1->Fill(jet4V.Pt());
+	  if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.25 and fabs(jet4V_vec.at(ijet).Eta()) < 2.5)
+	    ETM_pt_eta_2p25_2p5_bxm1->Fill(jet4V_vec.at(ijet).Pt());
+	  else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.5 and fabs(jet4V_vec.at(ijet).Eta()) < 2.75)
+	    ETM_pt_eta_2p5_2p75_bxm1->Fill(jet4V_vec.at(ijet).Pt());
+	  else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.75 and fabs(jet4V_vec.at(ijet).Eta()) < 3.0)
+	    ETM_pt_eta_2p75_3p0_bxm1->Fill(jet4V_vec.at(ijet).Pt());
 	}	
 
 	/// ETM decision
 	if(match_ETM_bx == -1 or match_egiso_bx == -1 or match_eg_bx == -1){
-	  if(fabs(jet4V.Eta()) >= 2.25 and fabs(jet4V.Eta()) < 2.5)
-	    EGETM_pt_eta_2p25_2p5_bxm1->Fill(jet4V.Pt());
-	  else if(fabs(jet4V.Eta()) >= 2.5 and fabs(jet4V.Eta()) < 2.75)
-	    EGETM_pt_eta_2p5_2p75_bxm1->Fill(jet4V.Pt());
-	  else if(fabs(jet4V.Eta()) >= 2.75 and fabs(jet4V.Eta()) < 3.0)
-	    EGETM_pt_eta_2p75_3p0_bxm1->Fill(jet4V.Pt());
+	  if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.25 and fabs(jet4V_vec.at(ijet).Eta()) < 2.5)
+	    EGETM_pt_eta_2p25_2p5_bxm1->Fill(jet4V_vec.at(ijet).Pt());
+	  else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.5 and fabs(jet4V_vec.at(ijet).Eta()) < 2.75)
+	    EGETM_pt_eta_2p5_2p75_bxm1->Fill(jet4V_vec.at(ijet).Pt());
+	  else if(fabs(jet4V_vec.at(ijet).Eta()) >= 2.75 and fabs(jet4V_vec.at(ijet).Eta()) < 3.0)
+	    EGETM_pt_eta_2p75_3p0_bxm1->Fill(jet4V_vec.at(ijet).Pt());
 	}	
 
       }
@@ -871,6 +907,43 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
 
   canvas->SaveAs((outputDIR+"/prefiring_efficiency_UGT_vs_pt.png").c_str(),"png");
   canvas->SaveAs((outputDIR+"/prefiring_efficiency_UGT_vs_pt.pdf").c_str(),"pdf");
+
+  //////
+  TGraphAsymmErrors* efficiency_UGT_ptem_eta_2p25_2p5 = new TGraphAsymmErrors(UGT_ptem_eta_2p25_2p5_bxm1,UGT_ptem_eta_2p25_2p5_denom);
+  TGraphAsymmErrors* efficiency_UGT_ptem_eta_2p5_2p75 = new TGraphAsymmErrors(UGT_ptem_eta_2p5_2p75_bxm1,UGT_ptem_eta_2p5_2p75_denom);
+  TGraphAsymmErrors* efficiency_UGT_ptem_eta_2p75_3p0 = new TGraphAsymmErrors(UGT_ptem_eta_2p75_3p0_bxm1,UGT_ptem_eta_2p75_3p0_denom);
+
+  efficiency_UGT_ptem_eta_2p25_2p5->SetMarkerColor(kBlack);
+  efficiency_UGT_ptem_eta_2p25_2p5->SetLineColor(kBlack);
+  efficiency_UGT_ptem_eta_2p25_2p5->SetMarkerSize(1.2);
+  efficiency_UGT_ptem_eta_2p25_2p5->SetMarkerStyle(20);
+
+  efficiency_UGT_ptem_eta_2p5_2p75->SetMarkerColor(kRed);
+  efficiency_UGT_ptem_eta_2p5_2p75->SetLineColor(kRed);
+  efficiency_UGT_ptem_eta_2p5_2p75->SetMarkerSize(1.2);
+  efficiency_UGT_ptem_eta_2p5_2p75->SetMarkerStyle(20);
+
+  efficiency_UGT_ptem_eta_2p75_3p0->SetMarkerColor(kBlue);
+  efficiency_UGT_ptem_eta_2p75_3p0->SetLineColor(kBlue);
+  efficiency_UGT_ptem_eta_2p75_3p0->SetMarkerSize(1.2);
+  efficiency_UGT_ptem_eta_2p75_3p0->SetMarkerStyle(20);
+
+  efficiency_UGT_ptem_eta_2p25_2p5->GetXaxis()->SetTitle("p_{T}^{EM} [GeV]");
+  efficiency_UGT_ptem_eta_2p25_2p5->GetYaxis()->SetTitle("UGT efficiency (bx=-1)");
+  efficiency_UGT_ptem_eta_2p25_2p5->GetYaxis()->SetRangeUser(0.,1.);
+  efficiency_UGT_ptem_eta_2p25_2p5->Draw("AEP");
+  efficiency_UGT_ptem_eta_2p5_2p75->Draw("EPsame");
+  efficiency_UGT_ptem_eta_2p75_3p0->Draw("EPsame");
+  CMS_lumi(canvas,"");
+
+  leg.Clear();
+  leg.AddEntry(efficiency_UGT_ptem_eta_2p25_2p5,"2.25 < |#eta| < 2.50","PL");
+  leg.AddEntry(efficiency_UGT_ptem_eta_2p5_2p75,"2.50 < |#eta| < 2.75","PL");
+  leg.AddEntry(efficiency_UGT_ptem_eta_2p75_3p0,"2.75 < |#eta| < 3.00","PL");
+  leg.Draw("same");
+
+  canvas->SaveAs((outputDIR+"/prefiring_efficiency_UGT_vs_ptem.png").c_str(),"png");
+  canvas->SaveAs((outputDIR+"/prefiring_efficiency_UGT_vs_ptem.pdf").c_str(),"pdf");
 
 
   //////
@@ -1158,6 +1231,13 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
   efficiency_UGT_pt_eta_2p5_2p75->Write();
   efficiency_UGT_pt_eta_2p75_3p0->Write();
 
+  efficiency_UGT_ptem_eta_2p25_2p5->SetName("efficiency_UGT_ptem_eta_2p25_2p5");
+  efficiency_UGT_ptem_eta_2p5_2p75->SetName("efficiency_UGT_ptem_eta_2p5_2p75");
+  efficiency_UGT_ptem_eta_2p75_3p0->SetName("efficiency_UGT_ptem_eta_2p75_3p0");
+  efficiency_UGT_ptem_eta_2p25_2p5->Write();
+  efficiency_UGT_ptem_eta_2p5_2p75->Write();
+  efficiency_UGT_ptem_eta_2p75_3p0->Write();
+
   efficiency_ETM_pt_eta_2p25_2p5->SetName("efficiency_ETM_pt_eta_2p25_2p5");
   efficiency_ETM_pt_eta_2p5_2p75->SetName("efficiency_ETM_pt_eta_2p5_2p75");
   efficiency_ETM_pt_eta_2p75_3p0->SetName("efficiency_ETM_pt_eta_2p75_3p0");
@@ -1172,5 +1252,9 @@ void makePreFiringAnalysisWithPrescaled(string inputDIR,
   efficiency_EGETM_pt_eta_2p5_2p75->Write();
   efficiency_EGETM_pt_eta_2p75_3p0->Write();
 
+  jet_emfraction_2p25_2p5->Write();
+  jet_emfraction_2p5_2p75->Write();
+  jet_emfraction_2p75_3p0->Write();
+  
   output->Close();
 }
